@@ -68,7 +68,6 @@ exports.createPost = (req, res, next) => {
   const { title, content } = req.body;
   const image = req.file.path;
   let creator;
-  console.log(req.userId);
   const post = new Post({
     title,
     content,
@@ -126,6 +125,11 @@ exports.updatePost = (req, res, next) => {
         error.statusCode = 404;
         throw error;
       }
+      if (post.creator.toString() !== req.userId) {
+        const error = new Error('Not Authorized');
+        error.statusCode = 403;
+        throw error;
+      }
       if (image !== post.image) {
         console.log(post.image);
         cleatImage(post.image, image);
@@ -154,6 +158,11 @@ exports.deletePost = (req, res, next) => {
       if (!post) {
         const error = new Error('Post not found');
         error.statusCode = 404;
+        throw error;
+      }
+      if (post.creator.toString() !== req.userId) {
+        const error = new Error('Not Authorized');
+        error.statusCode = 403;
         throw error;
       }
       cleatImage(post.image);
