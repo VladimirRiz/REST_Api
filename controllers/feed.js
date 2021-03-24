@@ -6,7 +6,6 @@ exports.getPost = (req, res, next) => {
   const postId = req.params.postId;
   Post.findById(postId)
     .then((post) => {
-      console.log(post);
       if (!post) {
         const error = new Error('Post not found');
         error.statusCode = 404;
@@ -36,17 +35,23 @@ exports.getPosts = (req, res, next) => {
 };
 
 exports.createPost = (req, res, next) => {
-  const { title, content } = req.body;
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     const error = new Error('Validation failed');
     error.statusCode = 422;
     throw error;
   }
+  if (!req.file) {
+    const error = new Error('No image');
+    error.statusCode = 422;
+    throw error;
+  }
+  const { title, content } = req.body;
+  const image = req.file.path;
   const post = new Post({
-    title: title,
-    content: content,
-    image: 'images/book.png',
+    title,
+    content,
+    image,
     creator: {
       name: 'Riz',
     },
