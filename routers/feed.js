@@ -16,6 +16,7 @@ router.post(
     body('title').isString().isLength({ min: 5 }).trim(),
     body('content').isString().isLength({ min: 5 }).trim(),
   ],
+  isAuth,
   feedController.createPost
 );
 
