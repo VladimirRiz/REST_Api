@@ -1,6 +1,14 @@
+const path = require('path');
+const fs = require('fs');
+
 const { validationResult } = require('express-validator');
 
 const Post = require('../models/post');
+
+const cleatImage = (filePath) => {
+  const imagePath = path.join(__dirname, '..', filePath);
+  fs.unlink(imagePath, (err) => console.log(err));
+};
 
 exports.getPost = (req, res, next) => {
   const postId = req.params.postId;
@@ -64,6 +72,51 @@ exports.createPost = (req, res, next) => {
         message: 'Success!',
         post: result,
       });
+    })
+    .catch((err) => {
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
+      next(err);
+    });
+};
+
+exports.updatePost = (req, res, next) => {
+  const { postId } = req.params;
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    const error = new Error('Validation failed');
+    error.statusCode = 422;
+    throw error;
+  }
+  const { title, content } = req.body;
+  let image = req.body.image;
+  if (req.file) {
+    image = req.file.path;
+  }
+  if (!image) {
+    const error = new Error('No image');
+    error.statusCode = 422;
+    throw error;
+  }
+  Post.findById(postId)
+    .then((post) => {
+      if (!post) {
+        const error = new Error('Post not found');
+        error.statusCode = 404;
+        throw error;
+      }
+      if (image !== post.image) {
+        console.log(post.image);
+        cleatImage(post.image, image);
+      }
+      post.title = title;
+      post.content = content;
+      post.image = image;
+      return post.save();
+    })
+    .then((result) => {
+      res.status(200).json({ message: 'Success', post: result });
     })
     .catch((err) => {
       if (!err.statusCode) {
