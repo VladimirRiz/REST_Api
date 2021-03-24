@@ -12,7 +12,7 @@ router.get('/posts', feedController.getPosts);
 router.post(
   '/post',
   [
-    body('title').isString().isLength({ min: 5 }).trim(),
+    body('title').isString().isLength({ min: 7 }).trim(),
     body('content').isString().isLength({ min: 5 }).trim(),
   ],
   feedController.createPost
