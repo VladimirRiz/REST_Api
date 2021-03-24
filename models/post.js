@@ -17,7 +17,7 @@ const postSchema = new Schema(
       required: true,
     },
     creator: {
-      content: {
+      name: {
         type: Object,
         required: true,
       },
