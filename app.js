@@ -3,14 +3,15 @@ const express = require('express');
 
 const mongoose = require('mongoose');
 
-const feedRouts = require('./routers/feed').router;
+const feedRouts = require('./routers/feed');
 
 const app = express();
 
 const MONGODB_URI =
-  'mongodb+srv://rizian:rizPass@cluster0.h28ps.mongodb.net/messages?retryWrites=true&w=majority';
+  'mongodb+srv://rizian:rizPass@cluster0.h28ps.mongodb.net/messages';
 
 app.use(express.json()); // application/json
+app.use('/images', express.static(path.join(__dirname, 'images')));
 
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -19,7 +20,6 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use('/images', express.static(path.join(__dirname, 'images')));
 app.use('/feed', feedRouts);
 
 app.use((error, req, res, next) => {
