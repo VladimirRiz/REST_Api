@@ -125,3 +125,28 @@ exports.updatePost = (req, res, next) => {
       next(err);
     });
 };
+
+exports.deletePost = (req, res, next) => {
+  const { postId } = req.params;
+  Post.findById(postId)
+    .then((post) => {
+      //Check logged in user
+      if (!post) {
+        const error = new Error('Post not found');
+        error.statusCode = 404;
+        throw error;
+      }
+      cleatImage(post.image);
+      return Post.findByIdAndRemove(postId);
+    })
+    .then((result) => {
+      console.log(result);
+      res.status(200).json({ message: 'Deleted!' });
+    })
+    .catch((err) => {
+      if (!err.statusCode) {
+        err.statusCode = 500;
+      }
+      next(err);
+    });
+};
