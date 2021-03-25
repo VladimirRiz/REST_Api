@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const path = require('path');
 const express = require('express');
 
@@ -10,8 +12,7 @@ const authRouts = require('./routers/auth');
 
 const app = express();
 
-const MONGODB_URI =
-  'mongodb+srv://rizian:rizPass@cluster0.h28ps.mongodb.net/messages';
+const MONGODB_URI = process.env.MONGODB;
 
 const fileStorage = multer.diskStorage({
   destination: (req, file, cb) => {
