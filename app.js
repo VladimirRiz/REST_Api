@@ -7,8 +7,8 @@ const multer = require('multer');
 
 const mongoose = require('mongoose');
 
-const feedRouts = require('./routers/feed');
-const authRouts = require('./routers/auth');
+const feedRouts = require('./routes/feed');
+const authRouts = require('./routes/auth');
 
 const app = express();
 
@@ -41,7 +41,10 @@ app.use('/images', express.static(path.join(__dirname, 'images')));
 
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE');
+  res.setHeader(
+    'Access-Control-Allow-Methods',
+    'OPTIONS, GET, POST, PUT, PATCH, DELETE'
+  );
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   next();
 });
@@ -56,7 +59,7 @@ app.use((error, req, res, next) => {
 });
 
 mongoose
-  .connect(MONGODB_URI, { useUnifiedTopology: true, useNewUrlParser: true })
+  .connect(MONGODB_URI)
   .then(() => {
     const server = app.listen(8080);
     const io = require('socket.io')(server);

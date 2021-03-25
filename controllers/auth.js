@@ -1,9 +1,9 @@
-const User = require('../models/user');
+const { validationResult } = require('express-validator');
 
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
-const { validationResult } = require('express-validator');
+const User = require('../models/user');
 
 exports.signup = async (req, res, next) => {
   const errors = validationResult(req);
@@ -22,8 +22,8 @@ exports.signup = async (req, res, next) => {
       password: hashPassword,
       name,
     });
-    await user.save();
-    res.status(201).json({ message: 'Success', userId: user._id });
+    const result = await user.save();
+    res.status(201).json({ message: 'Success', userId: result._id });
   } catch (err) {
     if (!err.statusCode) {
       err.statusCode = 500;
@@ -57,7 +57,46 @@ exports.login = async (req, res, next) => {
       'supersecretkeyever',
       { expiresIn: '1h' }
     );
+    console.log(loadedUser, token);
     res.status(200).json({ token, userId: loadedUser._id.toString() });
+  } catch (err) {
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
+  }
+};
+
+exports.getUserStatus = async (req, res, next) => {
+  console.log(req.userId);
+  try {
+    const user = await User.findById(req.userId);
+    if (!user) {
+      const error = new Error('User not found.');
+      error.statusCode = 404;
+      throw error;
+    }
+    res.status(200).json({ status: user.status });
+  } catch (err) {
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
+  }
+};
+
+exports.updateUserStatus = async (req, res, next) => {
+  const newStatus = req.body.status;
+  try {
+    const user = await User.findById(req.userId);
+    if (!user) {
+      const error = new Error('User not found.');
+      error.statusCode = 404;
+      throw error;
+    }
+    user.status = newStatus;
+    await user.save();
+    res.status(200).json({ message: 'User updated.' });
   } catch (err) {
     if (!err.statusCode) {
       err.statusCode = 500;
