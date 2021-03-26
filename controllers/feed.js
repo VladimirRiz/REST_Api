@@ -1,6 +1,8 @@
 const path = require('path');
 const fs = require('fs');
 
+const io = require('../socket');
+
 const { validationResult } = require('express-validator');
 
 const Post = require('../models/post');
@@ -20,6 +22,7 @@ exports.getPost = async (req, res, next) => {
       error.statusCode = 404;
       throw error;
     }
+    console.log(post);
     res.status(200).json({ message: 'success', post: post });
   } catch (err) {
     if (!err.statusCode) {
@@ -35,6 +38,8 @@ exports.getPosts = async (req, res, next) => {
   try {
     const totalItems = await Post.find().countDocuments();
     const posts = await Post.find()
+      .populate('creator')
+      .sort({ createdAt: -1 })
       .skip((currentPage - 1) * perPage)
       .limit(perPage);
 
@@ -72,6 +77,10 @@ exports.createPost = async (req, res, next) => {
     const user = await User.findById(req.userId);
     user.posts.push(post);
     await user.save();
+    io.getIO().emit('posts', {
+      action: 'create',
+      post: { ...post._doc, creator: { _id: req.userId, name: user.name } },
+    });
     res.status(201).json({
       message: 'Success!',
       post: post,
